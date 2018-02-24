@@ -1,0 +1,74 @@
+#!/usr/bin/env python
+
+import sys
+import argparse
+
+HELP = '''Print selected parts of lines from each FILE to standard output.
+With no FILE, or when FILE is -, read standard input.'''
+
+class lib(object):
+    open = open
+
+parser = argparse.ArgumentParser(description=HELP)
+parser.add_argument('-d', dest='delim', default='\t',
+                    help='use DELIM instead of TAB for field delimiter')
+parser.add_argument('-f', dest='fields',
+                    help='select only these fields; also print any line that contains no delimiter character, unless the -s option is specified')
+parser.add_argument('-b', dest='bytes',
+                    help='select only these bytes')
+parser.add_argument('-c', dest='characters',
+                    help='select only these characters')
+parser.add_argument('-n', dest='ignored',
+                    help='ignored')
+parser.add_argument('--output-delimiter', dest='out_delim',
+                    help='use  STRING  as  the output delimiter the default is to use the input delimiter')
+parser.add_argument('file',
+                    help='FILE')
+
+
+def arg_split(s):
+    return [int(field)-1 for field in s.split(',')]
+
+
+def fields_op(line):
+    for field in args.fields:
+        result = line.split(args.delim)[field]
+        result = result.strip('\n')
+        result += args.out_delim
+        yield result
+
+
+def characters_op(line):
+    line = list(line)
+    for char in args.bytes:
+        result = line[char]
+        result += args.out_delim
+        yield result
+
+
+args = parser.parse_args()
+if args.fields is not None:
+    args.fields = arg_split(args.fields)
+    if args.out_delim is None:
+        args.out_delim = args.delim
+    main_op = fields_op
+elif args.bytes is not None:
+    args.bytes = arg_split(args.bytes)
+    if args.out_delim is None:
+        args.out_delim = ''
+    main_op = characters_op
+elif args.characters is not None:
+    args.characters = arg_split(args.characters)
+    if args.out_delim is None:
+        args.out_delim = ''
+    main_op = characters_op
+else:
+    sys.stderr.write("%s: you must specify a list of bytes, characters, or fields. Try '--help' for more information.\n" % sys.argv[0])
+    exit(1)
+
+
+with lib.open(args.file) as f:
+    for line in f:
+        for result in main_op(line):
+            sys.stdout.write(result)
+        sys.stdout.write('\n')
