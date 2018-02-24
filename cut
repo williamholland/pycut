@@ -20,10 +20,12 @@ parser.add_argument('-b', '--bytes', dest='bytes',
                     help='select only these bytes')
 parser.add_argument('-c', '--characters', dest='characters',
                     help='select only these characters')
-parser.add_argument('-n', dest='_', action='store_true', default=False,
+parser.add_argument('-n', dest='_', action='store_true',
                     help='(ignored)')
-parser.add_argument('--complement', dest='complement', action='store_true',
+parser.add_argument('--complement', dest='complement', action='store_true', default=False,
                     help='complement the set of selected bytes, characters or fields')
+parser.add_argument('-s', '--only-delimited', dest='s', action='store_true', default=False,
+                    help='do not print lines not containing delimiters')
 parser.add_argument('--output-delimiter', dest='STRING',
                     help='use  STRING  as  the output delimiter the default is to use the input delimiter')
 parser.add_argument('file', nargs='?',
@@ -78,9 +80,15 @@ else:
 def main_loop(fd):
     for line in fd:
         line = line.rstrip('\n')
-        result = args.out_delim.join(list(get_selection_from_line(line)))
-        sys.stdout.write(result)
-        sys.stdout.write('\n')
+        if args.fields is not None and args.delim not in line:
+            if not args.s:
+                sys.stdout.write(line)
+                sys.stdout.write('\n')
+        else:
+            result = args.out_delim.join(list(get_selection_from_line(line)))
+            sys.stdout.write(result)
+            if result or args.fields is None or not args.s:
+                sys.stdout.write('\n')
 
 
 if args.file is None:
