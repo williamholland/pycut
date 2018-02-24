@@ -32,10 +32,6 @@ parser.add_argument('file', nargs='?',
                     help='FILE')
 
 
-def arg_split(s):
-    return [int(field)-1 for field in s.split(',')]
-
-
 def fields_splitter(line):
     return line.split(args.delim)
 
@@ -44,30 +40,46 @@ def characters_splitter(line):
     return list(line)
 
 
+def satisfies_selection(index):
+    index += 1
+    strindex = str(index)
+    for field in args.selection.split(','):
+        if strindex == field:
+            return True
+        elif field.startswith('-'):
+            if index <= int(field[1:]):
+                return True
+        elif field.endswith('-'):
+            if index >= int(field[:-1]):
+                return True
+        elif '-' in field:
+            a,b = ( int(i) for i in field.split('-') )
+            if a <= index <= b:
+                return True
+    return False
+
+
 def get_selection_from_line(line):
     ''' iterate over the cut line and yield selected elements '''
     line = args.splitter(line)
     for i, term in enumerate(line):
-        if (i in args.selection) is not args.complement:
+        if satisfies_selection(i) is not args.complement:
             yield term
 
 
 args = parser.parse_args()
 args.out_delim = args.STRING
 if args.fields is not None:
-    args.fields = arg_split(args.fields)
     if args.out_delim is None:
         args.out_delim = args.delim
     args.splitter = fields_splitter
     args.selection = args.fields
 elif args.bytes is not None:
-    args.bytes = arg_split(args.bytes)
     if args.out_delim is None:
         args.out_delim = ''
     args.splitter = characters_splitter
     args.selection = args.bytes
 elif args.characters is not None:
-    args.characters = arg_split(args.characters)
     if args.out_delim is None:
         args.out_delim = ''
     args.splitter = characters_splitter
@@ -81,14 +93,14 @@ def main_loop(fd):
     for line in fd:
         line = line.rstrip('\n')
         if args.fields is not None and args.delim not in line:
-            if not args.s:
-                sys.stdout.write(line)
-                sys.stdout.write('\n')
+            if args.s:
+                continue
+            result = line
         else:
             result = args.out_delim.join(list(get_selection_from_line(line)))
-            sys.stdout.write(result)
-            if result or args.fields is None or not args.s:
-                sys.stdout.write('\n')
+        sys.stdout.write(result)
+        if result or args.fields is None or not args.s:
+            sys.stdout.write('\n')
 
 
 if args.file is None:
