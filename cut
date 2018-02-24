@@ -19,7 +19,7 @@ parser.add_argument('-b', '--bytes', dest='bytes',
                     help='select only these bytes')
 parser.add_argument('-c', '--characters', dest='characters',
                     help='select only these characters')
-parser.add_argument('-n', dest='ignored', action='store_const', const=None, default=None,
+parser.add_argument('-n', dest='_', action='store_true',
                     help='(ignored)')
 parser.add_argument('--output-delimiter', dest='STRING',
                     help='use  STRING  as  the output delimiter the default is to use the input delimiter')
@@ -31,22 +31,19 @@ def arg_split(s):
     return [int(field)-1 for field in s.split(',')]
 
 
-def fields_op(line):
-    line = line.split(args.delim)
-    for field in args.fields:
-        try:
-            result = line[field]
-        except IndexError:
-            pass
-        else:
-            yield result
+def fields_splitter(line):
+    return line.split(args.delim)
 
 
-def characters_op(line):
-    line = list(line)
-    for char in args.bytes:
+def characters_splitter(line):
+    return list(line)
+
+
+def cut_line_iter(line):
+    line = args.splitter(line)
+    for s in args.selection:
         try:
-            result = line[char]
+            result = line[s]
         except IndexError:
             pass
         else:
@@ -59,17 +56,20 @@ if args.fields is not None:
     args.fields = arg_split(args.fields)
     if args.out_delim is None:
         args.out_delim = args.delim
-    main_op = fields_op
+    args.splitter = fields_splitter
+    args.selection = args.fields
 elif args.bytes is not None:
     args.bytes = arg_split(args.bytes)
     if args.out_delim is None:
         args.out_delim = ''
-    main_op = characters_op
+    args.splitter = characters_splitter
+    args.selection = args.bytes
 elif args.characters is not None:
     args.characters = arg_split(args.characters)
     if args.out_delim is None:
         args.out_delim = ''
-    main_op = characters_op
+    args.splitter = characters_splitter
+    args.selection = args.characters
 else:
     sys.stderr.write("%s: you must specify a list of bytes, characters, or fields. Try '--help' for more information.\n" % sys.argv[0])
     exit(1)
@@ -78,7 +78,7 @@ else:
 def main_loop(fd):
     for line in fd:
         line = line.rstrip('\n')
-        result = args.out_delim.join(list(main_op(line)))
+        result = args.out_delim.join(list(cut_line_iter(line)))
         sys.stdout.write(result)
         sys.stdout.write('\n')
 
