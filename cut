@@ -32,19 +32,28 @@ def arg_split(s):
 
 
 def fields_op(line):
+    line = line.split(args.delim)
     for field in args.fields:
-        result = line.split(args.delim)[field]
-        result = result.strip('\n')
-        result += args.out_delim
-        yield result
+        try:
+            result = line[field]
+        except IndexError:
+            pass
+        else:
+            result = result.strip('\n')
+            result += args.out_delim
+            yield result
 
 
 def characters_op(line):
     line = list(line)
     for char in args.bytes:
-        result = line[char]
-        result += args.out_delim
-        yield result
+        try:
+            result = line[char]
+        except IndexError:
+            pass
+        else:
+            result += args.out_delim
+            yield result
 
 
 args = parser.parse_args()
