@@ -8,6 +8,7 @@ With no FILE, or when FILE is -, read standard input.'''
 
 class lib(object):
     open = open
+    stdin = sys.stdin
 
 parser = argparse.ArgumentParser(description=HELP)
 parser.add_argument('-d', dest='delim', default='\t',
@@ -22,7 +23,7 @@ parser.add_argument('-n', dest='ignored',
                     help='ignored')
 parser.add_argument('--output-delimiter', dest='out_delim',
                     help='use  STRING  as  the output delimiter the default is to use the input delimiter')
-parser.add_argument('file',
+parser.add_argument('file', nargs='?',
                     help='FILE')
 
 
@@ -67,8 +68,15 @@ else:
     exit(1)
 
 
-with lib.open(args.file) as f:
-    for line in f:
+def main_loop(fd):
+    for line in fd:
         for result in main_op(line):
             sys.stdout.write(result)
         sys.stdout.write('\n')
+
+
+if args.file is None:
+    main_loop(lib.stdin)
+else:
+    with lib.open(args.file) as f:
+        main_loop(f)
