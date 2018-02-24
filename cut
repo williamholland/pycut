@@ -39,8 +39,6 @@ def fields_op(line):
         except IndexError:
             pass
         else:
-            result = result.strip('\n')
-            result += args.out_delim
             yield result
 
 
@@ -52,7 +50,6 @@ def characters_op(line):
         except IndexError:
             pass
         else:
-            result += args.out_delim
             yield result
 
 
@@ -80,8 +77,9 @@ else:
 
 def main_loop(fd):
     for line in fd:
-        for result in main_op(line):
-            sys.stdout.write(result)
+        line = line.rstrip('\n')
+        result = args.out_delim.join(list(main_op(line)))
+        sys.stdout.write(result)
         sys.stdout.write('\n')
 
 
