@@ -19,9 +19,9 @@ parser.add_argument('-b', dest='bytes',
                     help='select only these bytes')
 parser.add_argument('-c', dest='characters',
                     help='select only these characters')
-parser.add_argument('-n', dest='ignored',
-                    help='ignored')
-parser.add_argument('--output-delimiter', dest='out_delim',
+parser.add_argument('-n', dest='ignored', action='store_const', const=None, default=None,
+                    help='(ignored)')
+parser.add_argument('--output-delimiter', dest='STRING',
                     help='use  STRING  as  the output delimiter the default is to use the input delimiter')
 parser.add_argument('file', nargs='?',
                     help='FILE')
@@ -57,6 +57,7 @@ def characters_op(line):
 
 
 args = parser.parse_args()
+args.out_delim = args.STRING
 if args.fields is not None:
     args.fields = arg_split(args.fields)
     if args.out_delim is None:
