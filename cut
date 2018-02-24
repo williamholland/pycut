@@ -11,13 +11,13 @@ class lib(object):
     stdin = sys.stdin
 
 parser = argparse.ArgumentParser(description=HELP)
-parser.add_argument('-d', dest='delim', default='\t',
+parser.add_argument('-d', '--delimiter', dest='delim', default='\t',
                     help='use DELIM instead of TAB for field delimiter')
-parser.add_argument('-f', dest='fields',
+parser.add_argument('-f', '--fields', dest='fields',
                     help='select only these fields; also print any line that contains no delimiter character, unless the -s option is specified')
-parser.add_argument('-b', dest='bytes',
+parser.add_argument('-b', '--bytes', dest='bytes',
                     help='select only these bytes')
-parser.add_argument('-c', dest='characters',
+parser.add_argument('-c', '--characters', dest='characters',
                     help='select only these characters')
 parser.add_argument('-n', dest='ignored', action='store_const', const=None, default=None,
                     help='(ignored)')
