@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import re
 import sys
 import argparse
 
@@ -75,13 +74,11 @@ if args.fields is not None:
     args.splitter = fields_splitter
     args.selection = args.fields
 elif args.bytes is not None:
-    if args.out_delim is None:
-        args.out_delim = ''
+    args.out_delim = ''
     args.splitter = characters_splitter
     args.selection = args.bytes
 elif args.characters is not None:
-    if args.out_delim is None:
-        args.out_delim = ''
+    args.out_delim = ''
     args.splitter = characters_splitter
     args.selection = args.characters
 else:
